@@ -15,6 +15,10 @@ export const PlanQueryCompactSchema = z.object({
   t: z.string(),
 });
 
+export const PlanParamSchema = z.object({
+  plan: z.string().regex(planRegex),
+});
+
 export const AssignmentRowSchema = z.object({
   date: z.string().datetime(),
   address: z.string().min(1),

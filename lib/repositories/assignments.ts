@@ -24,7 +24,7 @@ export async function bulkUpsert(
   planId: ObjectId,
   gardenerId: ObjectId,
   rows: AssignmentRow[],
-): Promise<void> {
+): Promise<{ upserted: number; updated: number }> {
   const db = await getDb();
   const col = db.collection<Assignment>('assignments');
   const ops = rows.map((row) => ({
@@ -49,13 +49,22 @@ export async function bulkUpsert(
     },
   }));
   if (ops.length) {
-    await col.bulkWrite(ops);
+    const res = await col.bulkWrite(ops);
+    return { upserted: res.upsertedCount, updated: res.modifiedCount };
   }
+  return { upserted: 0, updated: 0 };
 }
 
-export async function deleteById(id: ObjectId): Promise<void> {
+export async function deleteById(
+  planId: ObjectId,
+  gardenerId: ObjectId,
+  id: ObjectId,
+): Promise<boolean> {
   const db = await getDb();
-  await db.collection<Assignment>('assignments').deleteOne({ _id: id });
+  const res = await db
+    .collection<Assignment>('assignments')
+    .deleteOne({ _id: id, plan_id: planId, gardener_id: gardenerId });
+  return res.deletedCount > 0;
 }
 
 export async function importFromPrevMonth(

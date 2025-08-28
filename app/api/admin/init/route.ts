@@ -16,6 +16,7 @@ export async function GET() {
     .collection('assignments')
     .createIndex({ plan_id: 1, gardener_id: 1, work_date: 1, address: 1 }, { unique: true });
   await db.collection('submissions').createIndex({ plan_id: 1, gardener_id: 1 }, { unique: true });
+  await db.collection('ratelimits').createIndex({ created_at: 1 }, { expireAfterSeconds: 60 * 10 });
 
   const gardenersCol = db.collection<Gardener>('gardeners');
   if ((await gardenersCol.countDocuments()) === 0) {
