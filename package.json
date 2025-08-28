@@ -35,6 +35,8 @@
     "autoprefixer": "^10.4.15",
     "postcss": "^8.4.27",
     "tailwindcss-rtl": "^0.9.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   }
 }
