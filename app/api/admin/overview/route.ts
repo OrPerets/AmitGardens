@@ -59,5 +59,6 @@ export async function GET(req: NextRequest) {
       coverageDays,
     },
     rows,
+    locked: planDoc.locked,
   });
 }
