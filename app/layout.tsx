@@ -8,14 +8,19 @@ const font = Alef({ subsets: ['hebrew'], weight: ['400', '700'], variable: '--fo
 
 export const metadata = {
   title: 'Amit Gardens',
-  viewport: { width: 'device-width', initialScale: 1 },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="he" dir="rtl">
       <body className={cn('min-h-screen bg-background font-sans antialiased', font.variable)}>
-        <Toaster>{children}</Toaster>
+        {children}
+        <Toaster />
       </body>
     </html>
   );

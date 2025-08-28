@@ -40,7 +40,7 @@ export default function BulkPasteDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-2 py-1 border"
+        className="btn btn-secondary h-9"
       >
         הדבקה מרשימה
       </button>
@@ -49,23 +49,33 @@ export default function BulkPasteDialog({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-4 space-y-2 max-w-md w-full">
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="w-full h-40 border p-2"
-        />
-        <div className="flex gap-2 justify-end">
-          <button
-            type="button"
-            className="px-2 py-1 border"
-            onClick={() => setOpen(false)}
-          >
-            בטל
-          </button>
-          <button type="button" className="px-2 py-1 border" onClick={parse}>
-            אישור
-          </button>
+      <div className="card w-full max-w-md">
+        <div className="card-header">הדבקה מרשימה</div>
+        <div className="card-body space-y-3">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="w-full h-40 input"
+            placeholder="תאריך|כתובת|הערות (שורה לכל רשומה)"
+            dir="rtl"
+          />
+          <div className="flex gap-2 justify-start">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={parse}
+              aria-label="אישור הדבקה"
+            >
+              אישור
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => setOpen(false)}
+            >
+              בטל
+            </button>
+          </div>
         </div>
       </div>
     </div>

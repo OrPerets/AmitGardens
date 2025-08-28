@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlanParamSchema } from '@/lib/validators';
 import { jsonError } from '@/lib/api';
-import { readAdminSessionCookie } from '@/lib/cookies';
+import { readAdminFromAuthorization } from '@/lib/adminAuth';
 import { getPlanByYyyymm, toggleLock } from '@/lib/repositories/plans';
 
 export async function POST(req: NextRequest) {
-  const session = readAdminSessionCookie(req);
+  const session = readAdminFromAuthorization(req);
   if (!session) return jsonError('unauthorized', 'Unauthorized', 401);
   const body = await req.json().catch(() => null);
   const parsed = PlanParamSchema.safeParse(body);

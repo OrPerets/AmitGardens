@@ -2,9 +2,12 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 const COOKIE_NAME = 'admin_session';
-const secret = process.env.SESSION_SECRET;
-if (!secret) {
-  throw new Error('SESSION_SECRET missing');
+function getSecret(): string {
+  const s = process.env.SESSION_SECRET;
+  if (!s) {
+    throw new Error('SESSION_SECRET missing');
+  }
+  return s;
 }
 
 export interface AdminSession {
@@ -12,7 +15,7 @@ export interface AdminSession {
 }
 
 function sign(payload: string): string {
-  return createHmac('sha256', secret).update(payload).digest('hex');
+  return createHmac('sha256', getSecret()).update(payload).digest('hex');
 }
 
 export function setAdminSessionCookie(

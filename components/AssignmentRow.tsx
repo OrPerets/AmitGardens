@@ -5,8 +5,9 @@ import MonthPicker from './MonthPicker';
 import { z } from 'zod';
 import { AssignmentRowSchema } from '@/lib/validators';
 
-const RowSchema = AssignmentRowSchema.extend({ id: z.string().optional() });
-export type AssignmentFormRow = z.infer<typeof RowSchema>;
+export type AssignmentFormRow = z.infer<typeof AssignmentRowSchema> & {
+  id?: string;
+};
 
 type FormType = { rows: AssignmentFormRow[] };
 
@@ -30,8 +31,8 @@ export default function AssignmentRow({
   month,
 }: Props) {
   return (
-    <tr>
-      <td className="border p-1">
+    <tr className="hover:bg-accent/50">
+      <td className="p-2 align-top border-t">
         <Controller
           control={control}
           name={`rows.${index}.date` as const}
@@ -45,38 +46,38 @@ export default function AssignmentRow({
           )}
         />
         {errors.rows?.[index]?.date && (
-          <p className="text-red-600 text-xs">
-            {(errors.rows[index]?.date as any)?.message}
+          <p className="error-text">
+            {errors.rows[index]?.date?.message as string}
           </p>
         )}
       </td>
-      <td className="border p-1">
+      <td className="p-2 align-top border-t">
         <input
           type="text"
-          className="border p-1 w-full"
+          className="input"
           disabled={disabled}
           {...register(`rows.${index}.address` as const)}
         />
         {errors.rows?.[index]?.address && (
-          <p className="text-red-600 text-xs">
-            {(errors.rows[index]?.address as any)?.message}
+          <p className="error-text">
+            {errors.rows[index]?.address?.message as string}
           </p>
         )}
       </td>
-      <td className="border p-1">
+      <td className="p-2 align-top border-t">
         <input
           type="text"
-          className="border p-1 w-full"
+          className="input"
           disabled={disabled}
           {...register(`rows.${index}.notes` as const)}
         />
       </td>
-      <td className="border p-1 text-center">
+      <td className="p-2 align-top border-t text-center">
         <button
           type="button"
           onClick={onDelete}
           disabled={disabled}
-          className="text-red-600"
+          className="btn btn-destructive h-8 px-2"
         >
           ✕
         </button>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AdminAuthSchema } from '@/lib/validators';
 import { jsonError } from '@/lib/api';
-import { setAdminSessionCookie } from '@/lib/cookies';
+import { createAdminToken } from '@/lib/adminAuth';
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
   ) {
     return jsonError('unauthorized', 'Invalid credentials', 401);
   }
-  const res = NextResponse.json({ ok: true });
-  setAdminSessionCookie(res, { email });
-  return res;
+  const token = createAdminToken(email);
+  return NextResponse.json({ ok: true, token });
 }

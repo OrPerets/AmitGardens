@@ -41,6 +41,31 @@ export async function createOrUpdateLinksForPlan(
   return result;
 }
 
+export async function createOrUpdateLinkForPlan(
+  planId: ObjectId,
+  gardenerId: ObjectId,
+  expiresAt?: Date | null,
+): Promise<string> {
+  const db = await getDb();
+  const col = db.collection<PlanLink>('plan_links');
+  const token = genToken();
+  const tokenHash = hash(token);
+  await col.updateOne(
+    { plan_id: planId, gardener_id: gardenerId },
+    {
+      $set: {
+        plan_id: planId,
+        gardener_id: gardenerId,
+        token_hash: tokenHash,
+        created_at: new Date(),
+        expires_at: expiresAt ?? null,
+      },
+    },
+    { upsert: true },
+  );
+  return token;
+}
+
 export async function resolveLink(
   planId: ObjectId,
   gardenerId: ObjectId,

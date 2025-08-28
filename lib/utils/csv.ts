@@ -5,12 +5,12 @@ function escapeCsv(value: string): string {
   return value;
 }
 
-export interface CsvColumn<T> {
+export interface CsvColumn<T extends Record<string, unknown>> {
   key: keyof T;
   header: string;
 }
 
-export function exportToCsv<T extends Record<string, any>>(
+export function exportToCsv<T extends Record<string, unknown>>(
   rows: T[],
   columns: CsvColumn<T>[],
 ): string {

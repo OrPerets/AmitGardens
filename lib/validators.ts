@@ -19,6 +19,12 @@ export const PlanParamSchema = z.object({
   plan: z.string().regex(planRegex),
 });
 
+export const CreateSingleLinkSchema = z.object({
+  plan: z.string().regex(planRegex),
+  gardenerName: z.string().min(1),
+  deadline: z.string().datetime().optional(),
+});
+
 export const AssignmentRowSchema = z.object({
   date: z.string().datetime(),
   address: z.string().min(1),

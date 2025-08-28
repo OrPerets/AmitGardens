@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlanParamSchema } from '@/lib/validators';
 import { jsonError } from '@/lib/api';
-import { readAdminSessionCookie } from '@/lib/cookies';
+import { readAdminFromAuthorization } from '@/lib/adminAuth';
 import { getPlanByYyyymm } from '@/lib/repositories/plans';
 import { listGardeners } from '@/lib/repositories/gardeners';
 import { getDb } from '@/lib/mongo';
-import { exportToCsv } from '@/lib/utils/csv';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const session = readAdminSessionCookie(req);
+  const session = readAdminFromAuthorization(req);
   if (!session) return jsonError('unauthorized', 'Unauthorized', 401);
   const url = new URL(req.url);
   const params = Object.fromEntries(url.searchParams.entries());
@@ -40,17 +39,7 @@ export async function GET(req: NextRequest) {
     address: a.address,
     notes: a.notes || '',
   }));
-  if (format === 'csv') {
-    const csv = exportToCsv(rows, [
-      { key: 'date', header: 'תאריך' },
-      { key: 'gardener', header: 'גנן' },
-      { key: 'address', header: 'כתובת' },
-      { key: 'notes', header: 'הערות' },
-    ]);
-    return new NextResponse(csv, {
-      headers: { 'Content-Type': 'text/csv; charset=utf-8' },
-    });
-  }
+  // CSV export removed per requirements
   return NextResponse.json({
     stats: {
       gardeners: gardeners.length,
@@ -60,5 +49,6 @@ export async function GET(req: NextRequest) {
     },
     rows,
     locked: planDoc.locked,
+    gardenerList: gardeners.map((g) => ({ id: g._id.toString(), name: g.name })),
   });
 }

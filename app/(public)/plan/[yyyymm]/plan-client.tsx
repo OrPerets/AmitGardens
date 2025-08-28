@@ -57,9 +57,15 @@ export default function PlanClient({ plan, g, t }: Props) {
       });
       const resRows = await fetch(`/api/assignments?plan=${plan}&g=${g}&t=${t}`);
       if (resRows.ok) {
-        const rows = await resRows.json();
+        type AssignmentRowDto = {
+          id: string;
+          date: string;
+          address: string;
+          notes: string | null;
+        };
+        const rows = (await resRows.json()) as { assignments: AssignmentRowDto[] };
         reset({
-          rows: rows.assignments.map((r: any) => ({
+          rows: rows.assignments.map((r) => ({
             id: r.id,
             date: r.date.slice(0, 10),
             address: r.address,
@@ -75,9 +81,15 @@ export default function PlanClient({ plan, g, t }: Props) {
   const refreshRows = async () => {
     const resRows = await fetch(`/api/assignments?plan=${plan}&g=${g}&t=${t}`);
     if (resRows.ok) {
-      const rows = await resRows.json();
+      type AssignmentRowDto = {
+        id: string;
+        date: string;
+        address: string;
+        notes: string | null;
+      };
+      const rows = (await resRows.json()) as { assignments: AssignmentRowDto[] };
       reset({
-        rows: rows.assignments.map((r: any) => ({
+        rows: rows.assignments.map((r) => ({
           id: r.id,
           date: r.date.slice(0, 10),
           address: r.address,
@@ -141,65 +153,80 @@ export default function PlanClient({ plan, g, t }: Props) {
     }
   };
 
-  if (loading) return <div className="p-4">טוען…</div>;
-  if (error) return <div className="p-4">{error}</div>;
+  if (loading)
+    return (
+      <div className="p-4 space-y-4">
+        <div className="skeleton h-6 w-1/2 mx-auto" />
+        <div className="skeleton h-9 w-full" />
+        <div className="skeleton h-40 w-full" />
+      </div>
+    );
+  if (error) return <div className="p-4 empty-state">{error}</div>;
 
   return (
     <div className="p-4 space-y-4">
       {info && (
-        <h1 className="text-xl font-bold text-center">
+        <h1 className="text-2xl font-bold text-center">
           {`שיבוץ לחודש ${plan} – ${info.gardener}`}
         </h1>
       )}
-      <form onSubmit={onSave} className="space-y-2">
-        <table className="w-full text-right border">
-          <thead>
-            <tr>
-              <th className="border p-1">תאריך</th>
-              <th className="border p-1">כתובת</th>
-              <th className="border p-1">הערות</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {fields.map((field, idx) => (
-              <AssignmentRow
-                key={field.id}
-                index={idx}
-                control={control}
-                register={register}
-                errors={form.formState.errors}
-                onDelete={() => onDelete(idx, (field as AssignmentFormRow).id)}
-                disabled={readOnly}
-                month={plan}
-              />
-            ))}
-          </tbody>
-        </table>
+      <form onSubmit={onSave} className="space-y-3">
+        <div className="overflow-x-auto">
+          <table className="table table-zebra table-hover">
+            <thead>
+              <tr>
+                <th>תאריך</th>
+                <th>כתובת</th>
+                <th>הערות</th>
+                <th aria-label="פעולות" />
+              </tr>
+            </thead>
+            <tbody>
+              {fields.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-muted-foreground">אין שורות עדיין</td>
+                </tr>
+              ) : (
+                fields.map((field, idx) => (
+                  <AssignmentRow
+                    key={field.id}
+                    index={idx}
+                    control={control}
+                    register={register}
+                    errors={form.formState.errors}
+                    onDelete={() => onDelete(idx, (field as AssignmentFormRow).id)}
+                    disabled={readOnly}
+                    month={plan}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         {!readOnly && (
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => append({ date: '', address: '', notes: '' })}
-              className="px-2 py-1 border"
+              className="btn btn-secondary"
             >
               הוסף שורה
             </button>
             <BulkPasteDialog onConfirm={onPaste} />
-            <button type="submit" className="px-2 py-1 border">
+            <button type="submit" className="btn btn-primary">
               שמור
             </button>
             <button
               type="button"
               onClick={submitFinal}
-              className="px-2 py-1 border"
+              className="btn btn-ghost"
             >
               שליחה סופית
             </button>
           </div>
         )}
       </form>
-      {readOnly && <p className="text-center">הטופס נעול</p>}
+      {readOnly && <p className="text-center badge">הטופס נעול</p>}
     </div>
   );
 }

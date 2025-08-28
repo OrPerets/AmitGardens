@@ -1,7 +1,7 @@
 'use client';
 
 import * as ToastPrimitive from '@radix-ui/react-toast';
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ToastItem {
   id: number;
@@ -9,42 +9,67 @@ interface ToastItem {
   description?: string;
 }
 
-const ToastContext = createContext<
-  (toast: { title: string; description?: string }) => void
->(() => {});
+type Listener = (items: ToastItem[]) => void;
 
-export function useToast() {
-  return useContext(ToastContext);
+let listeners: Listener[] = [];
+let queue: ToastItem[] = [];
+
+function notify() {
+  for (const listener of listeners) listener([...queue]);
 }
 
-export function Toaster({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const add = (toast: { title: string; description?: string }) => {
-    setToasts((prev) => [...prev, { id: Date.now(), ...toast }]);
+function subscribe(listener: Listener) {
+  listeners.push(listener);
+  listener([...queue]);
+  return () => {
+    listeners = listeners.filter((l) => l !== listener);
   };
-  const remove = (id: number) =>
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+}
+
+function remove(id: number) {
+  queue = queue.filter((t) => t.id !== id);
+  notify();
+}
+
+function add(toast: { title: string; description?: string }) {
+  queue = [...queue, { id: Date.now(), ...toast }];
+  notify();
+}
+
+export function useToast() {
+  return add;
+}
+
+export function Toaster() {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  useEffect(() => subscribe(setToasts), []);
   return (
     <ToastPrimitive.Provider swipeDirection="right">
-      <ToastContext.Provider value={add}>{children}</ToastContext.Provider>
       {toasts.map((t) => (
         <ToastPrimitive.Root
           key={t.id}
           open
           onOpenChange={(open) => !open && remove(t.id)}
-          className="bg-gray-800 text-white rounded-md p-4 mb-2 shadow"
+          className="card shadow-md mb-2 px-4 py-3"
         >
-          <ToastPrimitive.Title className="font-medium">
-            {t.title}
-          </ToastPrimitive.Title>
-          {t.description && (
-            <ToastPrimitive.Description className="text-sm opacity-80">
-              {t.description}
-            </ToastPrimitive.Description>
-          )}
+          <div className="flex gap-3 items-start">
+            <div className="mt-0.5 text-primary" aria-hidden>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 15h-2v-6h2Zm0-8h-2V7h2Z"/></svg>
+            </div>
+            <div className="space-y-1">
+              <ToastPrimitive.Title className="text-sm font-medium">
+                {t.title}
+              </ToastPrimitive.Title>
+              {t.description && (
+                <ToastPrimitive.Description className="text-xs text-muted-foreground">
+                  {t.description}
+                </ToastPrimitive.Description>
+              )}
+            </div>
+          </div>
         </ToastPrimitive.Root>
       ))}
-      <ToastPrimitive.Viewport className="fixed bottom-0 left-0 flex flex-col p-4 gap-2 w-96 max-w-[100vw] z-50" />
+      <ToastPrimitive.Viewport className="fixed bottom-4 right-4 flex flex-col p-0 gap-2 w-[380px] max-w-[calc(100vw-2rem)] z-50" aria-live="polite" role="status" />
     </ToastPrimitive.Provider>
   );
 }

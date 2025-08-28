@@ -19,7 +19,7 @@ export default function MonthPicker({ value, onChange, month, disabled }: Props)
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
-      className="border p-1"
+      className="input"
     />
   );
 }
