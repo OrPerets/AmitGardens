@@ -32,10 +32,7 @@ export function setAdminSessionCookie(
   });
 }
 
-export function readAdminSessionCookie(
-  req: NextRequest,
-): AdminSession | null {
-  const raw = req.cookies.get(COOKIE_NAME)?.value;
+function parseSession(raw: string | undefined): AdminSession | null {
   if (!raw) return null;
   try {
     const decoded = Buffer.from(raw, 'base64').toString('utf8');
@@ -53,6 +50,19 @@ export function readAdminSessionCookie(
   } catch {
     return null;
   }
+}
+
+export function readAdminSessionCookie(
+  req: NextRequest,
+): AdminSession | null {
+  const raw = req.cookies.get(COOKIE_NAME)?.value;
+  return parseSession(raw);
+}
+
+export function readAdminSessionFromCookie(
+  raw: string | undefined,
+): AdminSession | null {
+  return parseSession(raw);
 }
 
 export function clearAdminSessionCookie(res: NextResponse): void {
