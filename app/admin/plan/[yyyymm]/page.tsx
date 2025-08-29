@@ -1,5 +1,9 @@
 import AdminGuard from '@/components/AdminGuard';
-import DashboardClient from './dashboard-client';
+import dynamic from 'next/dynamic';
+
+const DashboardClient = dynamic(() => import('./dashboard-client'), {
+  ssr: false,
+});
 
 export default function AdminPlanPage({
   params,

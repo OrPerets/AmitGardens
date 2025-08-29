@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import dayjs from 'dayjs';
+import { addMonths, format } from 'date-fns';
 import MonthGrid from '@/components/MonthGrid';
 
 type Status = 'not_started' | 'in_progress' | 'submitted';
@@ -11,7 +11,7 @@ export default function WorkerDashboardPage() {
   const search = useSearchParams();
   const g = search.get('g') || '';
   const t = search.get('t') || '';
-  const month = dayjs().add(1, 'month').format('YYYY-MM');
+  const month = format(addMonths(new Date(), 1), 'yyyy-MM');
   const [name, setName] = useState('');
   const [status, setStatus] = useState<Status>('not_started');
 
@@ -26,10 +26,14 @@ export default function WorkerDashboardPage() {
           setStatus('submitted');
           return;
         }
-        const rowsRes = await fetch(`/api/assignments?plan=${month}&g=${g}&t=${t}`);
+        const rowsRes = await fetch(
+          `/api/assignments?plan=${month}&g=${g}&t=${t}`,
+        );
         if (rowsRes.ok) {
           const rows = await rowsRes.json();
-          setStatus(rows.assignments.length > 0 ? 'in_progress' : 'not_started');
+          setStatus(
+            rows.assignments.length > 0 ? 'in_progress' : 'not_started',
+          );
         }
       }
     }

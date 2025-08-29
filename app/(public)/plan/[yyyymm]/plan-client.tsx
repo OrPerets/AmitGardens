@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dayjs from 'dayjs';
+import { parseISO, getDaysInMonth, addDays, format } from 'date-fns';
 import MonthGrid from '@/components/MonthGrid';
 import type { DayEntry } from '@/components/DayCell';
 import { useToast } from '@/components/ui/toaster';
@@ -49,7 +49,9 @@ export default function PlanClient({ plan, g, t }: Props) {
         locked: data.plan.locked,
         submitted: !!data.submission,
       });
-      const rowsRes = await fetch(`/api/assignments?plan=${plan}&g=${g}&t=${t}`);
+      const rowsRes = await fetch(
+        `/api/assignments?plan=${plan}&g=${g}&t=${t}`,
+      );
       if (rowsRes.ok) {
         const { assignments } = await rowsRes.json();
         const map: Record<string, DayEntry> = {};
@@ -61,7 +63,10 @@ export default function PlanClient({ plan, g, t }: Props) {
         });
         setEntries(map);
       }
-      const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
+      const saved =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem(storageKey)
+          : null;
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as Record<string, DayEntry>;
@@ -91,12 +96,12 @@ export default function PlanClient({ plan, g, t }: Props) {
       if (value) next[date] = value;
       else delete next[date];
       if (value && bulk) {
-        const start = dayjs(`${plan}-01`);
-        const daysInMonth = start.daysInMonth();
+        const start = parseISO(`${plan}-01`);
+        const daysInMonth = getDaysInMonth(start);
         for (let d = 1; d <= daysInMonth; d++) {
-          const current = start.date(d);
-          const dow = current.day();
-          const ds = current.format('YYYY-MM-DD');
+          const current = addDays(start, d - 1);
+          const dow = current.getDay();
+          const ds = format(current, 'yyyy-MM-dd');
           if (ds === date) continue;
           if (
             bulk === 'all' ||
@@ -170,7 +175,11 @@ export default function PlanClient({ plan, g, t }: Props) {
         <progress className="progress w-full" value={filled} max={required} />
         <p className="text-center text-sm">{`${filled}/${required} ימים מלאים`}</p>
       </div>
-      <MonthGrid month={plan} entries={entries} onChange={readOnly ? () => {} : onChange} />
+      <MonthGrid
+        month={plan}
+        entries={entries}
+        onChange={readOnly ? () => {} : onChange}
+      />
       {!readOnly && (
         <div className="flex gap-2">
           <button type="button" className="btn btn-secondary" onClick={onSave}>
@@ -219,4 +228,3 @@ export default function PlanClient({ plan, g, t }: Props) {
     </div>
   );
 }
-

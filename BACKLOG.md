@@ -3,23 +3,23 @@
 ### Scope
 
 - **Goal**: MVP production‑ready app to schedule gardening jobs per month, with admin plan creation, per‑gardener magic links, public per‑gardener assignment form, admin overview, CSV export, plan lock/unlock, and reminders stub.
-- **App type**: Next.js 14 (App Router, TypeScript, ESM), MongoDB Atlas (serverless), TailwindCSS + shadcn/ui (RTL, mobile‑first, accessible), Zod, React Hook Form, dayjs.
+- **App type**: Next.js 14 (App Router, TypeScript, ESM), MongoDB Atlas (serverless), TailwindCSS + shadcn/ui (RTL, mobile‑first, accessible), Zod, React Hook Form, date-fns.
 - **Constraints**: No NextAuth. Admin login via env‑configured credentials + signed session cookie. Magic links use SHA‑256 token hashing with salt; basic rate limiting on public routes. Strong validations, clear errors, clean repository layer.
 
 ### Milestones / Phases
 
-1) Foundation & Tooling
-2) Data Layer (Types, Mongo Client, Indexes, Repositories)
-3) Utilities (Crypto, Cookies, Dates, CSV)
-4) Validators (Zod)
-5) API Layer (Public + Admin + Rate Limit)
-6) UI Foundations (Layout, Theme, RTL, shadcn, Toast)
-7) Public Plan Page (Assignments flow)
-8) Admin Auth & Guard
-9) Admin Dashboard (KPIs, Table, Actions)
-10) Docs, DevEx, and Readme
-11) Quality: Testing, Accessibility, Performance
-12) Deploy (Vercel) & Release Checklist
+1. Foundation & Tooling
+2. Data Layer (Types, Mongo Client, Indexes, Repositories)
+3. Utilities (Crypto, Cookies, Dates, CSV)
+4. Validators (Zod)
+5. API Layer (Public + Admin + Rate Limit)
+6. UI Foundations (Layout, Theme, RTL, shadcn, Toast)
+7. Public Plan Page (Assignments flow)
+8. Admin Auth & Guard
+9. Admin Dashboard (KPIs, Table, Actions)
+10. Docs, DevEx, and Readme
+11. Quality: Testing, Accessibility, Performance
+12. Deploy (Vercel) & Release Checklist
 
 ---
 
@@ -29,7 +29,7 @@
 
 - Initialize Next.js 14 project with App Router and TypeScript (strict).
 - Configure ESLint (strict), Prettier, EditorConfig.
-- Install dependencies: mongodb, zod, react‑hook‑form, dayjs, tailwindcss, @radix‑ui/react‑*, class‑variance‑authority, tailwind‑merge, shadcn/ui, lucide‑react, cookie, @types/node, @types/cookie.
+- Install dependencies: mongodb, zod, react‑hook‑form, date-fns, tailwindcss, @radix‑ui/react‑\*, class‑variance‑authority, tailwind‑merge, shadcn/ui, lucide‑react, cookie, @types/node, @types/cookie.
 - Configure Tailwind with RTL support (logical properties), base styles, typography, and shadcn/ui setup.
 - Enable `app/` directory routing (App Router) with ESM.
 - Add `public/favicon.ico`.
@@ -497,7 +497,8 @@ Note: All responses use `application/json` unless `format=csv`.
 9. Docs
    - README and envs; Vercel deploy guide.
 10. Quality
-   - A11y, performance, manual QA, optional tests.
+
+- A11y, performance, manual QA, optional tests.
 
 ---
 
@@ -540,5 +541,3 @@ NEXT_ADMIN_PASSWORD=supersecret
 CRYPTO_TOKEN_SALT=change_me_long_random
 SESSION_SECRET=another_long_random_for_cookie_signing
 ```
-
-

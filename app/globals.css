@@ -162,3 +162,10 @@
 .animate-slide-up {
   animation: slide-up var(--motion-normal) ease-out forwards;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none;
+  }
+}
