@@ -49,3 +49,19 @@ export const AdminAuthSchema = z.object({
   password: z.string().min(8),
 });
 
+export const AdminSubmissionQuerySchema = z.object({
+  plan: z.string().regex(planRegex),
+});
+
+export const AdminSubmissionDetailSchema = z.object({
+  plan: z.string().regex(planRegex),
+  gardenerId: z.string(),
+});
+
+export const AdminUpdateSubmissionSchema = z.object({
+  plan: z.string().regex(planRegex),
+  gardenerId: z.string(),
+  status: z.enum(['approved', 'needs_changes']),
+  note: z.string().optional(),
+});
+

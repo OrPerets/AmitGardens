@@ -4,6 +4,7 @@ export interface Gardener {
   _id: ObjectId;
   name: string;
   phone?: string;
+  team?: string;
   created_at: Date;
 }
 
@@ -39,4 +40,7 @@ export interface Submission {
   plan_id: ObjectId;
   gardener_id: ObjectId;
   submitted_at: Date;
+  status: 'pending' | 'approved' | 'needs_changes';
+  note?: string;
+  reviewed_at?: Date;
 }
