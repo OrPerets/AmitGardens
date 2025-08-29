@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@/lib/zodResolver';
@@ -9,11 +8,11 @@ import dayjs from 'dayjs';
 import { AdminAuthSchema } from '@/lib/validators';
 import { useToast } from '@/components/ui/toaster';
 import { useState as useReactState } from 'react';
+import { motion as motionTokens } from '@/lib/tokens';
 
 type FormData = z.infer<typeof AdminAuthSchema>;
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const toast = useToast();
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useReactState(false);
@@ -45,7 +44,10 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="container max-w-md mx-auto p-6">
+    <div
+      className="container max-w-md mx-auto p-6 animate-fade-in"
+      style={{ animationDuration: motionTokens.normal }}
+    >
       <div className="card">
         <div className="card-header text-center">התחברות מנהל</div>
         <div className="card-body">
