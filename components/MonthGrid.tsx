@@ -1,14 +1,20 @@
 import dayjs from 'dayjs';
-import DayCell from './DayCell';
+import DayCell, { DayEntry } from './DayCell';
 
 const weekdays = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 
 interface MonthGridProps {
   /** Month in YYYY-MM format */
   month: string;
+  entries: Record<string, DayEntry>;
+  onChange: (
+    date: string,
+    value: DayEntry | null,
+    bulk?: 'weekdays' | 'weekends' | 'all',
+  ) => void;
 }
 
-export default function MonthGrid({ month }: MonthGridProps) {
+export default function MonthGrid({ month, entries, onChange }: MonthGridProps) {
   const start = dayjs(`${month}-01`);
   const daysInMonth = start.daysInMonth();
   const firstDay = start.day(); // Sunday = 0
@@ -28,7 +34,16 @@ export default function MonthGrid({ month }: MonthGridProps) {
         </div>
       ))}
       {cells.map((date, idx) =>
-        date ? <DayCell key={date} date={date} /> : <div key={idx} />,
+        date ? (
+          <DayCell
+            key={date}
+            date={date}
+            value={entries[date]}
+            onChange={onChange}
+          />
+        ) : (
+          <div key={idx} />
+        ),
       )}
     </div>
   );

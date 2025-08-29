@@ -55,7 +55,7 @@ export default function WorkerDashboardPage() {
           </a>
         </div>
       </div>
-      <MonthGrid month={month} />
+      <MonthGrid month={month} entries={{}} onChange={() => {}} />
     </div>
   );
 }
