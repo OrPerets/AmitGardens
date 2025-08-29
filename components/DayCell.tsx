@@ -2,6 +2,7 @@
 
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
+import { motion as motionTokens } from '@/lib/tokens';
 import dayjs from 'dayjs';
 
 export interface DayEntry {
@@ -54,8 +55,14 @@ const DayCell: FC<DayCellProps> = ({ date, value, onChange }) => {
         {day}
       </button>
       {open && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center">
-          <div className="bg-white w-full max-w-md p-4 rounded-t-lg space-y-3">
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center animate-fade-in"
+          style={{ animationDuration: motionTokens.normal }}
+        >
+          <div
+            className="bg-white w-full max-w-md p-4 rounded-t-lg space-y-3 animate-slide-up"
+            style={{ animationDuration: motionTokens.normal }}
+          >
             <h2 className="text-center font-medium">
               {dayjs(date).format('DD/MM')}
             </h2>

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toaster';
+import EmptyState from '@/components/EmptyState';
+import { Inbox } from 'lucide-react';
 
 interface SubmissionItem {
   gardenerId: string;
@@ -81,6 +83,9 @@ export default function DashboardClient({ plan }: { plan: string }) {
         </select>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
+        {filtered.length === 0 && (
+          <EmptyState icon={<Inbox className="h-10 w-10" />} title="אין נתונים" />
+        )}
         {filtered.map((item) => (
           <div key={item.gardenerId} className="card">
             <div className="card-body space-y-2">
@@ -93,9 +98,6 @@ export default function DashboardClient({ plan }: { plan: string }) {
             </div>
           </div>
         ))}
-        {filtered.length === 0 && (
-          <p className="text-center text-muted-foreground">אין נתונים</p>
-        )}
       </div>
     </div>
   );

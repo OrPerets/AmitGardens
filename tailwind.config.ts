@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { tokens } from "./lib/tokens";
 
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
@@ -39,11 +40,11 @@ const config: Config = {
         ring: "hsl(var(--ring))",
       },
       borderRadius: {
-        sm: "6px",
-        DEFAULT: "10px",
-        md: "10px",
-        lg: "14px",
-        xl: "20px",
+        sm: tokens.radii.sm,
+        DEFAULT: tokens.radii.md,
+        md: tokens.radii.md,
+        lg: tokens.radii.lg,
+        xl: tokens.radii.xl,
       },
       boxShadow: {
         sm: "0 1px 2px 0 rgba(16, 24, 40, 0.06)",
