@@ -135,6 +135,23 @@ export default function PlanClient({ plan, g, t }: Props) {
   };
 
   const submitFinal = async () => {
+    // Ensure latest assignments are persisted before final submission
+    try {
+      const rows = Object.entries(entries).map(([date, v]) => ({
+        date: new Date(date).toISOString(),
+        address: v.address,
+        notes: v.notes,
+      }));
+      if (rows.length) {
+        await fetch('/api/assignments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan, g, t, rows }),
+        });
+      }
+    } catch {
+      // Ignore save error here; the submission will still be recorded
+    }
     const res = await fetch('/api/submission/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -179,6 +196,8 @@ export default function PlanClient({ plan, g, t }: Props) {
         month={plan}
         entries={entries}
         onChange={readOnly ? () => {} : onChange}
+        isLoading={loading}
+        readOnly={readOnly}
       />
       {!readOnly && (
         <div className="flex gap-2">

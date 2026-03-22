@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import DirectionToggle from '@/components/DirectionToggle';
 import LanguageToggle from '@/components/LanguageToggle';
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 
 const font = Alef({
   subsets: ['hebrew'],
@@ -14,6 +15,7 @@ const font = Alef({
 
 export const metadata = {
   title: 'Amit Gardens',
+  manifest: '/manifest.json',
 };
 
 export const viewport = {
@@ -32,6 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         <DirectionToggle />
         <LanguageToggle />
+        <ServiceWorkerRegister />
         {children}
         <Toaster />
       </body>

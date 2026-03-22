@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { addMonths, format } from 'date-fns';
 import MonthGrid from '@/components/MonthGrid';
+import EnableNotifications from '@/components/EnableNotifications';
 
 type Status = 'not_started' | 'in_progress' | 'submitted';
 
-export default function WorkerDashboardPage() {
+function WorkerDashboardContent() {
   const search = useSearchParams();
   const g = search.get('g') || '';
   const t = search.get('t') || '';
@@ -51,6 +52,7 @@ export default function WorkerDashboardPage() {
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-2xl font-bold text-center">{`שלום${name ? ` ${name}` : ''}`}</h1>
+      <EnableNotifications />
       <div className="card">
         <div className="card-body text-center space-y-2">
           <p>{`סטטוס לחודש ${month}: ${statusText[status]}`}</p>
@@ -59,7 +61,15 @@ export default function WorkerDashboardPage() {
           </a>
         </div>
       </div>
-      <MonthGrid month={month} entries={{}} onChange={() => {}} />
+      <MonthGrid month={month} entries={{}} onChange={() => {}} readOnly={true} />
     </div>
+  );
+}
+
+export default function WorkerDashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-center">טוען…</div>}>
+      <WorkerDashboardContent />
+    </Suspense>
   );
 }

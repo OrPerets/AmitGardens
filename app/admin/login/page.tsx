@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@/lib/zodResolver';
-import { format } from 'date-fns';
 import { AdminAuthSchema } from '@/lib/validators';
 import { useToast } from '@/components/ui/toaster';
 import { useState as useReactState } from 'react';
@@ -38,8 +37,7 @@ export default function AdminLoginPage() {
         localStorage.setItem('admin_token', json.token);
       }
       toast({ title: 'התחברת בהצלחה' });
-      const plan = format(new Date(), 'yyyy-MM');
-      window.location.href = `/admin/plan/${plan}`;
+      window.location.href = `/admin`;
     } else {
       const json = await res.json().catch(() => null);
       setServerError(json?.message || 'שגיאה');
@@ -49,7 +47,7 @@ export default function AdminLoginPage() {
   return (
     <div
       className="container max-w-md mx-auto p-6 animate-fade-in"
-      style={{ animationDuration: motionTokens.normal }}
+      style={{ animationDuration: motionTokens.duration.normal }}
     >
       <div className="card">
         <div className="card-header text-center">{t('adminLogin')}</div>

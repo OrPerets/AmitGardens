@@ -4,6 +4,7 @@ export interface Gardener {
   _id: ObjectId;
   name: string;
   phone?: string;
+  email?: string;
   team?: string;
   created_at: Date;
 }

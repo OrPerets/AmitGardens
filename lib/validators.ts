@@ -65,3 +65,8 @@ export const AdminUpdateSubmissionSchema = z.object({
   note: z.string().optional(),
 });
 
+// Bulk create multiple plans given array of 'YYYY-MM' strings
+export const BulkCreatePlansSchema = z.object({
+  plans: z.array(z.string().regex(planRegex)).min(1),
+});
+

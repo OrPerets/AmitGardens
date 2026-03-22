@@ -3,40 +3,49 @@ import { getDb } from '../mongo';
 import type { Gardener } from '@/types/db';
 
 // Fixed gardeners list as requested
-const FIXED_GARDENER_NAMES: readonly string[] = [
-  'וויהב',
-  'שחר',
-  'אופיר את גיא',
-  'מלחם מחמוד',
-  'רזיאל שטרית',
+const FIXED_GARDENERS: readonly { name: string; email?: string; phone?: string }[] = [
+  { name: 'וויהב', email: 'wahab.example@gmail.com', phone: '+972544563855' },
+  { name: 'שחר', email: 'shachar.example@gmail.com', phone: '+972544563855' },
+  { name: 'אופיר את גיא', email: 'ofir.guy.example@gmail.com', phone: '+972544563855' },
+  { name: 'מלחם מחמוד', email: 'mahmoud.example@gmail.com', phone: '+972544563855' },
+  { name: 'רזיאל שטרית', email: 'raziel.example@gmail.com', phone: '+972544563855' },
+  { name: 'אור פרץ', email: 'orperets11@gmail.com', phone: '+972544563855' },
 ];
 
 export async function listGardeners(): Promise<Gardener[]> {
   const db = await getDb();
   const col = db.collection<Gardener>('gardeners');
-  // Ensure fixed gardeners exist (idempotent)
-  const ops = (FIXED_GARDENER_NAMES as string[]).map((name) => ({
+  
+  // Force update all gardeners with latest data (including phone numbers)
+  const updateOps = FIXED_GARDENERS.map((gardener) => ({
     updateOne: {
-      filter: { name },
+      filter: { name: gardener.name },
       update: {
+        $set: {
+          email: gardener.email,
+          phone: gardener.phone,
+        },
         $setOnInsert: {
           _id: new ObjectId(),
-          name,
+          name: gardener.name,
           created_at: new Date(),
         },
       },
       upsert: true,
     },
   }));
-  if (ops.length) {
-    await col.bulkWrite(ops, { ordered: false });
+  
+  if (updateOps.length) {
+    await col.bulkWrite(updateOps, { ordered: false });
   }
+  
   // Fetch and return in fixed order
+  const gardenerNames = FIXED_GARDENERS.map(g => g.name);
   const refreshed = await col
-    .find({ name: { $in: FIXED_GARDENER_NAMES as string[] } })
+    .find({ name: { $in: gardenerNames } })
     .toArray();
   const byName = new Map(refreshed.map((g) => [g.name, g]));
-  return (FIXED_GARDENER_NAMES as string[])
+  return gardenerNames
     .map((n) => byName.get(n))
     .filter((g): g is Gardener => !!g);
 }
@@ -48,7 +57,8 @@ export async function getGardenerById(id: ObjectId): Promise<Gardener | null> {
 
 export async function getOrCreateGardenerByName(name: string): Promise<Gardener> {
   const normalized = (name || '').trim();
-  if (!(FIXED_GARDENER_NAMES as string[]).includes(normalized)) {
+  const gardenerData = FIXED_GARDENERS.find(g => g.name === normalized);
+  if (!gardenerData) {
     throw new Error('unknown_gardener');
   }
   const db = await getDb();
@@ -58,7 +68,9 @@ export async function getOrCreateGardenerByName(name: string): Promise<Gardener>
   const res = await col.insertOne({
     _id: new ObjectId(),
     name: normalized,
+    email: gardenerData.email,
+    phone: gardenerData.phone,
     created_at: new Date(),
   } as Gardener);
-  return { _id: res.insertedId, name: normalized, created_at: new Date() } as Gardener;
+  return { _id: res.insertedId, name: normalized, email: gardenerData.email, phone: gardenerData.phone, created_at: new Date() } as Gardener;
 }

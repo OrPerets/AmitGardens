@@ -23,3 +23,13 @@ export async function createPlanIfMissing(year: number, month: number): Promise<
   await col.insertOne(doc);
   return doc;
 }
+
+export async function listPlans(): Promise<Array<{ year: number; month: number; locked: boolean }>> {
+  const db = await getDb();
+  const docs = await db
+    .collection<Plan>('plans')
+    .find({}, { projection: { _id: 0, year: 1, month: 1, locked: 1 } })
+    .sort({ year: -1, month: -1 })
+    .toArray();
+  return docs.map((p) => ({ year: p.year, month: p.month, locked: !!p.locked }));
+}

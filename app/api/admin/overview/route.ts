@@ -16,7 +16,6 @@ export async function GET(req: NextRequest) {
   const parsed = PlanParamSchema.safeParse(params);
   if (!parsed.success) return jsonError('invalid_query', 'Invalid query', 400);
   const { plan } = parsed.data;
-  const format = url.searchParams.get('format');
   const yyyymm = plan.replace('-', '');
   const planDoc = await getPlanByYyyymm(yyyymm);
   if (!planDoc) return jsonError('not_found', 'Plan not found', 404);

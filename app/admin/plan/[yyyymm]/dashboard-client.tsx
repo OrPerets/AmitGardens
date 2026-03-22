@@ -32,6 +32,7 @@ export default function DashboardClient({ plan }: { plan: string }) {
   const [locked, setLocked] = useState(false);
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [gardenerList, setGardenerList] = useState<string[]>([]);
+  const [nameToId, setNameToId] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState<null | 'not_found' | 'error'>(null);
   const [filterGardener, setFilterGardener] = useState('');
   const [from, setFrom] = useState('');
@@ -54,13 +55,18 @@ export default function DashboardClient({ plan }: { plan: string }) {
       setLocked(!!data.locked);
       setLinks([]);
       if (Array.isArray(data.gardenerList)) {
-        setGardenerList(
-          data.gardenerList
-            .map((g: { id: string; name: string }) => g?.name)
-            .filter(Boolean),
-        );
+        const names = data.gardenerList
+          .map((g: { id: string; name: string }) => g?.name)
+          .filter(Boolean);
+        setGardenerList(names);
+        const map: Record<string, string> = {};
+        for (const g of data.gardenerList) {
+          if (g?.name && g?.id) map[g.name] = g.id;
+        }
+        setNameToId(map);
       } else {
         setGardenerList([]);
+        setNameToId({});
       }
     } else {
       setStats(null);
@@ -74,25 +80,6 @@ export default function DashboardClient({ plan }: { plan: string }) {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan]);
-
-  const createLinks = async () => {
-    const token = localStorage.getItem('admin_token') || '';
-    const res = await fetch('/api/admin/links/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ plan }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setLinks(data.links || []);
-      toast({ title: 'קישורים נוצרו' });
-    } else {
-      toast({ title: 'שגיאה ביצירת קישורים' });
-    }
-  };
 
   const createSingleLink = async () => {
     if (!gardenerName.trim()) {
@@ -168,23 +155,90 @@ export default function DashboardClient({ plan }: { plan: string }) {
     }
   };
 
+  const sendForms = async () => {
+    const token = localStorage.getItem('admin_token') || '';
+    const res = await fetch('/api/admin/send-forms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ plan }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      toast({ title: data.message || 'טפסים נשלחו לכל הגננים (אימייל + WhatsApp)' });
+    } else {
+      toast({ title: 'שגיאה בשליחת הטפסים' });
+    }
+  };
+
+  // const checkWhatsAppStatus = async () => {
+  //   const token = localStorage.getItem('admin_token') || '';
+  //   const res = await fetch('/api/admin/whatsapp-status', {
+  //     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  //   });
+  //   if (res.ok) {
+  //     const data = await res.json();
+  //     const statusMsg = `WhatsApp Mode: ${data.mode}\nReady: ${data.ready ? 'Yes' : 'No'}\n${data.message}`;
+  //     toast({ title: statusMsg });
+  //   } else {
+  //     toast({ title: 'שגיאה בבדיקת סטטוס WhatsApp' });
+  //   }
+  // };
+
+  // const initWhatsApp = async () => {
+  //   const token = localStorage.getItem('admin_token') || '';
+  //   const res = await fetch('/api/admin/whatsapp-init', {
+  //     method: 'POST',
+  //     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  //   });
+  //   if (res.ok) {
+  //     const data = await res.json();
+  //     toast({ title: data.message || 'WhatsApp initialization started' });
+  //   } else {
+  //     toast({ title: 'שגיאה באתחול WhatsApp' });
+  //   }
+  // };
+
   // CSV export removed per requirements
 
-  const exportPdf = async (gardenerId: string) => {
+  const exportPdf = async (gardenerId: string, method: 'html' | 'direct' = 'html') => {
     // Simple navigation to the printable page; the page will render a printable calendar and trigger print dialog
-    window.open(`/admin/plan/${plan}/report/${gardenerId}`, '_blank');
+    const url = `/admin/plan/${plan}/report/${gardenerId}?download=1${method === 'direct' ? '&method=direct' : ''}`;
+    window.open(url, '_blank');
+  };
+
+  const exportSelectedPdf = () => {
+    const id = nameToId[filterGardener];
+    if (id) {
+      exportPdf(id);
+    } else {
+      toast({ title: 'בחר גנן לייצוא PDF' });
+    }
   };
 
   const gardenerOptions = (gardenerList.length
     ? gardenerList
     : Array.from(new Set(rows.map((r) => r.gardener))).filter(Boolean)
   ) as string[];
-  const filtered = rows.filter((r) => {
-    if (filterGardener && r.gardener !== filterGardener) return false;
+
+  // Apply only date range filtering for counting, gardener is selected separately
+  const dateFiltered = rows.filter((r) => {
     if (from && r.date < from) return false;
     if (to && r.date > to) return false;
     return true;
   });
+
+  const countByGardener: Record<string, number> = {};
+  for (const r of dateFiltered) {
+    if (!r.gardener) continue;
+    countByGardener[r.gardener] = (countByGardener[r.gardener] || 0) + 1;
+  }
+
+  const gardenerRows = (
+    filterGardener ? [filterGardener] : gardenerOptions
+  ).map((name) => ({ name, count: countByGardener[name] || 0 }));
 
   return (
     <div className="p-4 space-y-4">
@@ -204,7 +258,10 @@ export default function DashboardClient({ plan }: { plan: string }) {
           {stats && <StatsCards stats={stats} />}
           <div className="flex flex-wrap gap-2 items-center">
             <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">צור קישורים</button>
+            <button onClick={sendForms} className="btn btn-primary">שלח טפסים (אימייל + WhatsApp)</button>
             <button onClick={sendReminders} className="btn btn-secondary">שלח תזכורות</button>
+            {/* <button onClick={checkWhatsAppStatus} className="btn btn-ghost">בדוק WhatsApp</button> */}
+            {/* <button onClick={initWhatsApp} className="btn btn-ghost">אתחל WhatsApp</button> */}
             <span className="badge">סטטוס: {locked ? 'נעול' : 'פתוח'}</span>
             <div className="ml-auto flex gap-2 items-center">
               <button onClick={initDb} className="btn btn-ghost">אתחל</button>
@@ -314,29 +371,46 @@ export default function DashboardClient({ plan }: { plan: string }) {
                 className="input h-8 w-auto"
                 aria-label="עד תאריך"
               />
+              <button
+                onClick={exportSelectedPdf}
+                disabled={!filterGardener || !nameToId[filterGardener]}
+                className="btn btn-secondary h-8"
+                aria-disabled={!filterGardener || !nameToId[filterGardener]}
+              >
+                ייצוא PDF
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="table table-zebra table-hover">
                 <thead>
                   <tr>
-                    <th>תאריך</th>
                     <th>גנן</th>
-                    <th>כתובת</th>
-                    <th>הערות</th>
+                    <th>סה״כ משימות</th>
+                    <th>פעולות</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.length === 0 ? (
+                  {gardenerRows.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="text-center py-6 text-muted-foreground">אין שורות להצגה</td>
+                      <td colSpan={3} className="text-center py-6 text-muted-foreground">אין גננים להצגה</td>
                     </tr>
                   ) : (
-                    filtered.map((r, idx) => (
-                      <tr key={idx}>
-                        <td className="align-top">{r.date}</td>
-                        <td className="align-top">{r.gardener}</td>
-                        <td className="align-top">{r.address}</td>
-                        <td className="align-top">{r.notes}</td>
+                    gardenerRows.map((g) => (
+                      <tr key={g.name}>
+                        <td className="align-top">{g.name}</td>
+                        <td className="align-top">{g.count}</td>
+                        <td className="align-top">
+                          {nameToId[g.name] ? (
+                            <button
+                              className="btn btn-secondary h-7 px-2 text-xs whitespace-nowrap"
+                              onClick={() => exportPdf(nameToId[g.name])}
+                            >
+                              PDF
+                            </button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">לא זמין</span>
+                          )}
+                        </td>
                       </tr>
                     ))
                   )}

@@ -20,17 +20,20 @@ export async function GET() {
 
   const gardenersCol = db.collection<Gardener>('gardeners');
   if ((await gardenersCol.countDocuments()) === 0) {
-    const FIXED_GARDENER_NAMES = [
-      'וויהב',
-      'שחר',
-      'אופיר את גיא',
-      'מלחם מחמוד',
-      'רזיאל שטרית',
+    const FIXED_GARDENERS = [
+      { name: 'וויהב', email: 'wahab.example@gmail.com', phone: '+972544563855' },
+      { name: 'שחר', email: 'shachar.example@gmail.com', phone: '+972544563855' },
+      { name: 'אופיר את גיא', email: 'ofir.guy.example@gmail.com', phone: '+972544563855' },
+      { name: 'מלחם מחמוד', email: 'mahmoud.example@gmail.com', phone: '+972544563855' },
+      { name: 'רזיאל שטרית', email: 'raziel.example@gmail.com', phone: '+972544563855' },
+      { name: 'אור פרץ', email: 'orperets11@gmail.com', phone: '+972544563855' },
     ];
     await gardenersCol.insertMany(
-      FIXED_GARDENER_NAMES.map((name) => ({
+      FIXED_GARDENERS.map((gardener) => ({
         _id: new ObjectId(),
-        name,
+        name: gardener.name,
+        email: gardener.email,
+        phone: gardener.phone,
         created_at: new Date(),
       })),
     );

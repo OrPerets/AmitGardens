@@ -15,10 +15,14 @@ export async function POST(req: NextRequest) {
   // Two modes: bulk create for all gardeners, or create single link by name with optional deadline
   const singleParsed = CreateSingleLinkSchema.safeParse(body);
   const bulkParsed = PlanParamSchema.safeParse(body);
-  if (!singleParsed.success && !bulkParsed.success) {
+  let plan: string;
+  if (singleParsed.success) {
+    plan = singleParsed.data.plan;
+  } else if (bulkParsed.success) {
+    plan = bulkParsed.data.plan;
+  } else {
     return jsonError('invalid_body', 'Invalid request body', 400);
   }
-  const { plan } = (singleParsed.success ? singleParsed.data : bulkParsed.data);
   const year = Number(plan.slice(0, 4));
   const month = Number(plan.slice(5, 7));
   const planDoc = await createPlanIfMissing(year, month);
@@ -28,7 +32,7 @@ export async function POST(req: NextRequest) {
     let gardener;
     try {
       gardener = await getOrCreateGardenerByName(gardenerName);
-    } catch (e) {
+    } catch {
       return jsonError('invalid_gardener', 'Unknown gardener name', 400);
     }
     const expiresAt = deadline ? new Date(deadline) : null;
